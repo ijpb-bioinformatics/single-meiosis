@@ -1,3 +1,6 @@
 [submodule "bash/single-meiosis-pipeline"]
 	path = bash/single-meiosis-pipeline
 	url = https://github.com/jos4uke/single-meiosis-pipeline.git
+[submodule "bash/bash-common"]
+	path = bash/bash-common
+	url = https://github.com/jos4uke/bash-common.git
