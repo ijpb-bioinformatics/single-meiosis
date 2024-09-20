@@ -1,0 +1,116 @@
+
+SCRIPT_DIR=/save/dcharif/bioinfo-projects/single-meiosis/SCRIPTS
+
+# V2
+$SCRIPT_DIR/singlemeiosis.sh QAB_Tet4 V2 /work/dcharif/test_sm_genotoul_version delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh QAB_Tet5 V2 /work/dcharif/test_sm_genotoul_version delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh QAB_Tet6 V2 /work/dcharif/test_sm_genotoul_version delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh QFiFa_Tet3 V2 /work/dcharif/test_sm_genotoul_version delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh QFi_Tet2 V2 /work/dcharif/test_sm_genotoul_version delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh tetrade1 V2 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh tetrade2 V2 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh tetrade3 V2 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh tetrade4 V2 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh Fi_Tet2 V2 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh Fi_Tet1 V2 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh Fa_Tet4 V2 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh QFi V2 /work/dcharif/test_sm_genotoul_version delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh QFiFa_Tet1 V2 /work/dcharif/test_sm_genotoul_version delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh FiFa_Tet2 V2 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh FiFa_Tet4 V2 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh msh2 V2 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh Qfa_Tet3 V2 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh tetradeFidg V2 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh tetradewtfifa_20141020 V2 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh tetradewtfifa_20150528 V2 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh tetradewtfifa_201511 V2 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh tetradefancm_20141020 V2 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh tetradefancm_20150624 V2 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh tetradefancm_201511 V2 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis_wo_sm.sh tetradefancm V2 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis_wo_sm.sh tetradewtfifa V2 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis_only_M1.sh QFi V2 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis_only_M3.sh FiFa_Tet2 V2 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+
+# V3
+$SCRIPT_DIR/singlemeiosis.sh tetrade2 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis_wo_sm.sh tetrade2 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis_wo_sm_wo_analysis.sh tetrade2 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr => en cours JoinT Chr1
+
+$SCRIPT_DIR/singlemeiosis.sh tetrade1 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr => OK
+$SCRIPT_DIR/singlemeiosis.sh tetrade3 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr => en cours hmm joinT Chr4 U24
+$SCRIPT_DIR/singlemeiosis.sh tetrade4 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr => aborted hmm
+$SCRIPT_DIR/singlemeiosis.sh Fi_Tet2 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr => aborted hmm
+$SCRIPT_DIR/singlemeiosis.sh Fi_Tet1 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr => aborted hmm
+$SCRIPT_DIR/singlemeiosis.sh Fa_Tet4 V3 /work/dcharif/test_sm_genotoul_version delphine.charif@inra.fr => en cours hmm joinT Chr3 U24
+$SCRIPT_DIR/singlemeiosis.sh QAB_Tet4 V3 /work/cmezard/single-meiosis delphine.charif@inra.fr => OK
+$SCRIPT_DIR/singlemeiosis.sh QAB_Tet5 V3 /work/fgranier/single-meiosis delphine.charif@inra.fr => en Cours hmm joinT Chr4 NOU24
+$SCRIPT_DIR/singlemeiosis.sh QAB_Tet6 V3 /work/fgranier/single-meiosis delphine.charif@inra.fr => en Cours hmm joinT Chr1 NOU24
+$SCRIPT_DIR/singlemeiosis.sh QFiFa_Tet3 V3 /work/cmezard/single-meiosis delphine.charif@inra.fr => en Cours hmm joinT Chr2 NOU24
+$SCRIPT_DIR/singlemeiosis.sh QFi V3 /work/dcharif/test_sm_genotoul_version delphine.charif@inra.fr => OK
+$SCRIPT_DIR/singlemeiosis.sh FiFa_Tet2 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr  => en cours hmm joinT Chr3 NOU24
+$SCRIPT_DIR/singlemeiosis.sh FiFa_Tet4 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr   => en cours hmm joinT Chr4 U24
+$SCRIPT_DIR/singlemeiosis.sh QFiFa_Tet1 V3 /work/cmezard/single-meiosis delphine.charif@inra.fr  => aborted hmm
+$SCRIPT_DIR/singlemeiosis.sh msh2 V3 /work/fgranier/single-meiosis  delphine.charif@inra.fr  => aborted hmm
+$SCRIPT_DIR/singlemeiosis.sh Qfa_Tet3 V3 /work/dcharif/test_sm_genotoul_version delphine.charif@inra.fr => OK
+$SCRIPT_DIR/singlemeiosis.sh tetradeFidg V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr =>  aborted hmm
+$SCRIPT_DIR/singlemeiosis.sh tetradewtfifa_20141020 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh tetradewtfifa_20150528 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh tetradewtfifa_201511 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr 
+$SCRIPT_DIR/singlemeiosis.sh tetradefancm_20141020 V3 /work/dcharif/test_sm_genotoul_version delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh tetradefancm_20150624 V3 /work/cmezard/single-meiosis delphine.charif@inra.fr
+$SCRIPT_DIR/singlemeiosis.sh tetradefancm_201511 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr 
+
+
+# BINOMIALE V3 tetrade2
+$SCRIPT_DIR/singlemeiosis_wo_sm_wo_analysis_binomiale.sh.sh tetrade2 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr 
+# CONCAT RANDOM V3 tetrade2
+CONFIG_FILE=/save/dcharif/bioinfo-dev/sh-dev/single-meiosis/share/singlemeiosis-pipeline/etc/singlemeiosis-pipeline_genotoul_V3
+SCRIPT_DIR=/save/dcharif/bioinfo-projects/single-meiosis/SCRIPTS
+$SCRIPT_DIR/singlemeiosis_wo_sm_wo_analysis_Concat_Chrom_Random.sh tetrade2 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr $CONFIG_FILE
+
+
+
+# CONCAT V3 
+CONFIG_FILE=/save/dcharif/bioinfo-dev/sh-dev/single-meiosis/share/singlemeiosis-pipeline/etc/singlemeiosis-pipeline_genotoul_V3
+SCRIPT_DIR=/save/dcharif/bioinfo-projects/single-meiosis/SCRIPTS
+
+$SCRIPT_DIR/singlemeiosis_wo_sm_wo_analysis_Concat_Chrom.sh tetrade2 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr $CONFIG_FILE 
+$SCRIPT_DIR/singlemeiosis_wo_sm_wo_analysis_Concat_Chrom.sh tetrade3 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr $CONFIG_FILE 
+$SCRIPT_DIR/singlemeiosis_wo_sm_wo_analysis_Concat_Chrom.sh tetrade4 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr $CONFIG_FILE 
+$SCRIPT_DIR/singlemeiosis_wo_sm_wo_analysis_Concat_Chrom.sh QAB_Tet5 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr $CONFIG_FILE 
+$SCRIPT_DIR/singlemeiosis_wo_sm_wo_analysis_Concat_Chrom.sh QAB_Tet6 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr $CONFIG_FILE 
+$SCRIPT_DIR/singlemeiosis_wo_sm_wo_analysis_Concat_Chrom.sh FiFa_Tet2 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr $CONFIG_FILE 
+$SCRIPT_DIR/singlemeiosis_wo_sm_wo_analysis_Concat_Chrom.sh FiFa_Tet4 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr $CONFIG_FILE
+$SCRIPT_DIR/singlemeiosis_wo_sm_wo_analysis_Concat_Chrom.sh tetradeFidg V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr $CONFIG_FILE
+$SCRIPT_DIR/singlemeiosis_wo_sm_wo_analysis_Concat_Chrom.sh Fa_Tet4 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr $CONFIG_FILE
+$SCRIPT_DIR/singlemeiosis_wo_sm_wo_analysis_Concat_Chrom.sh Fi_Tet2 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr $CONFIG_FILE
+$SCRIPT_DIR/singlemeiosis_wo_sm_wo_analysis_Concat_Chrom.sh Fi_Tet1 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr $CONFIG_FILE
+$SCRIPT_DIR/singlemeiosis_wo_sm_wo_analysis_Concat_Chrom.sh msh2 V3 /work/project/ijpb/single-meiosis  delphine.charif@inra.fr.sh $CONFIG_FILE
+$SCRIPT_DIR/singlemeiosis_wo_sm_wo_analysis_Concat_Chrom.sh QFiFa_Tet1 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr $CONFIG_FILE
+$SCRIPT_DIR/singlemeiosis_wo_sm_wo_analysis_Concat_Chrom.sh QFiFa_Tet3 V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr $CONFIG_FILE
+$SCRIPT_DIR/singlemeiosis_wo_sm-concat-chrom.sh tetradewtfifa V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr $CONFIG_FILE
+$SCRIPT_DIR/singlemeiosis_wo_sm-concat-chrom.sh tetradefancm V3 /work/project/ijpb/single-meiosis delphine.charif@inra.fr $CONFIG_FILE
+$SCRIPT_DIR/singlemeiosis_wo_sm-concat-chrom.sh QFi_Tet2 V3 /work/fgranier/single-meiosis delphine.charif@inra.fr $CONFIG_FILE
+
+# V4
+CONFIG_FILE=/save/dcharif/bioinfo-dev/sh-dev/single-meiosis/share/singlemeiosis-pipeline/etc/singlemeiosis-pipeline_genotoul_V4
+SCRIPT_DIR=/save/dcharif/bioinfo-projects/single-meiosis/SCRIPTS
+
+$SCRIPT_DIR/singlemeiosis.sh Qfa_Tet3 V4 /work/project/ijpb/single-meiosis delphine.charif@inra.fr $CONFIG_FILE
+
+# V5
+CONFIG_FILE=/save/dcharif/bioinfo-dev/sh-dev/single-meiosis/share/singlemeiosis-pipeline/etc/singlemeiosis-pipeline_genotoul_V5
+SCRIPT_DIR=/save/dcharif/bioinfo-projects/single-meiosis/SCRIPTS
+
+$SCRIPT_DIR/singlemeiosis-concat-chrom.sh Qfa_Tet3 V5 /work/dcharif/test_sm_genotoul_version delphine.charif@inra.fr $CONFIG_FILE
+$SCRIPT_DIR/singlemeiosis-concat-chrom.sh tetrade2 V5 /work/dcharif/test_sm_genotoul_version delphine.charif@inra.fr $CONFIG_FILE
+$SCRIPT_DIR/singlemeiosis.sh QAB_Tet5 V5 /work/dcharif/test_sm_genotoul_version delphine.charif@inra.fr $CONFIG_FILE
+$SCRIPT_DIR/singlemeiosis.sh QAB_Tet6 V5 /work/project/ijpb/single-meiosis delphine.charif@inra.fr $CONFIG_FILE
+$SCRIPT_DIR/singlemeiosis-concat-chrom.sh tetrade1 V5 /work/dcharif/test_sm_genotoul_version delphine.charif@inra.fr $CONFIG_FILE
+$SCRIPT_DIR/singlemeiosis-concat-chrom.sh tetrade4 V5 /work/dcharif/test_sm_genotoul_version delphine.charif@inra.fr $CONFIG_FILE
+$SCRIPT_DIR/singlemeiosis-concat-chrom.sh QFi_Tet2 V5 /work/fgranier/single-meiosis delphine.charif@inra.fr $CONFIG_FILE
+$SCRIPT_DIR/singlemeiosis-concat-chrom.sh tetrade3 V5 /work/project/ijpb/single-meiosis delphine.charif@inra.fr $CONFIG_FILE
+
+
+

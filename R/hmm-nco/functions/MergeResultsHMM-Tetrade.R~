@@ -1,0 +1,101 @@
+# Merge results from various models in view of marke classification
+
+rm(list=ls())
+source('/home/dcharif/save/bioinfo-dev/r-dev/hmm-nco/functions/FunctionsContTimeHMM.R'); 
+source('/home/dcharif/save/bioinfo-dev/r-dev/hmm-nco/functions/FunctionsBinaryContTimeHMM.R'); 
+source('/home/dcharif/save/bioinfo-dev/r-dev/hmm-nco/functions/FunctionsHMMGeneral.R')
+source('/home/dcharif/save/bioinfo-dev/r-dev/hmm-nco/functions/FunctionsHMMBinomial.R')
+Check = T
+
+# Parameters
+args <- commandArgs(trailingOnly=TRUE)
+
+
+DataDir = args[1]
+ResDir = args[2]
+DataName = args[3]
+
+ColorCode = c(4, 1)
+
+Check = T
+
+# States
+K = 2; I = 4; S = K^I
+State = expand.grid((1:K),(1:K),(1:K),(1:K))
+StateH = 4 - rowSums(State-1)
+DistState = as.matrix(dist(State, diag=T)^2)
+Mask.list = lapply(1:(max(DistState)-1), function(d){1*(DistState <= d)})
+NCO = which((StateH==1) | (StateH==3))
+
+# Functions
+F_Z2S <- function(Zvec){1+sum((Zvec-1)*(2^(0:(length(Zvec)-1))))}
+   
+# Analyses
+load(paste(DataDir,"/" ,DataName, '.Rdata', sep=''))
+tetrade = get(paste(DataName))
+# load(paste(DataDir, DataName, '.Rdata', sep=''))
+data.M = tetrade[[1]]
+Chr.list = levels(data.M$Chrom); Chr.nb = length(Chr.list)
+M.list = names(tetrade); I = length(M.list)
+for (c in  1:Chr.nb){
+  
+  Chr = Chr.list[c]
+  DataChrName = paste(DataName, '-', Chr, sep='')
+
+  cat('******************************************************\n')
+  cat(DataName, Chr, '\n')
+
+  ##################################################################
+  cat('Data \n')
+  Pos = tetrade[[1]]$Pos[which(tetrade[[1]]$Chrom==Chr)]
+  Y = sapply(1:I, function(i){tetrade[[i]]$Y[which(tetrade[[i]]$Chrom==Chr)]})
+  R = sapply(1:I, function(i){tetrade[[i]]$R[which(tetrade[[i]]$Chrom==Chr)]})
+  cat(length(Pos), dim(Y), dim(R), '\n')
+  n = length(Pos)
+ 
+
+  ##################################################################
+  cat('Same probas and rates \n')
+  load(paste(ResDir, "/",DataChrName, '-JointCHMM-SameRates.Rdata', sep=''))
+  EMsameMAPS = apply(invisible(sapply(1:I, function(i){EMsame$MAP[[i]]})), 1, F_Z2S) 
+  EMsameVitS = apply(invisible(sapply(1:I, function(i){EMsame$Vit[[i]]})), 1, F_Z2S) 
+  EMsameTauS = matrix(1, n, S)
+  invisible(lapply(1:S, function(s){
+    EMsameTauS[, s] <<- apply(sapply(1:I, function(i){EMsame$Tau[[i]][, State[s, i]]}), 1, prod)
+  }))
+  cat('NCO:', sum(is.element(EMsameMAPS, NCO)), sum(is.element(EMsameVitS, NCO)), '\n')
+  
+  # Check result consistency 
+  if (Check){
+     EMsame.list = list()
+     invisible(lapply(1:I, function(i){
+        EMsame.list[[i]] <<- list(logPhi = EMsame$logPhi[[i]], Pi = EMsame$Pi, Nu = EMsame$Nu)
+        }))
+     EMsameS = F_ClassifS(EMsame.list)
+     cat(EMsame$logL, EMsameS$logL, ' ')
+     cat(n, sum(diag(table(EMsameS$MAP, EMsameMAPS))), sum(diag(table(EMsameS$Vit, EMsameVitS))), '')
+     cat(max(abs(EMsameTauS - EMsameS$Tau)), '\n')
+  }
+  
+  # Classif with masked transitions
+  EMsameMaskClassif = F_VitMaskS(EMsame.list, Mask.list)
+  cat('NCO: ')
+  lapply(1:length(Mask.list), function(d){
+    cat(sum(is.element(EMsameMaskClassif[[d]]$MAPS, NCO)), sum(is.element(EMsameMaskClassif[[d]]$VitS, NCO)))
+  })
+  cat('\n')
+  
+  
+  # Export
+  SameProbSameRate = list(MAPS=EMsameMAPS, VitS=EMsameVitS, TauZ=EMsame$Tau, TauS=EMsameTauS, 
+                          Rate=EMsame$Rate, Prob=EMsame$gamma, MaskClassif=EMsameMaskClassif)
+
+  ##################################################################
+  cat('Final export \n')
+  Res = list(Pos=Pos, Y=Y, R=R, SpecProbSpecRate=SpecProbSpecRate, SameProbSpecRate=SameProbSpecRate, 
+             SameProbSameRate=SameProbSameRate)
+  save(Res, file = paste(ResDir,"/", DataChrName, '-CHMM-SameProbSameRate-Results.Rdata', sep=''))
+  
+}
+
+

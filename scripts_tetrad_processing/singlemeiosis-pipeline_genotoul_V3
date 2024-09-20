@@ -1,0 +1,72 @@
+#
+# SINGLE MEIOSIS PIPELINE USER CONFIG FILE 
+#
+
+# Authors: Joseph Tran <Joseph.Tran@versailles.inra.fr>
+
+# Date: 2013-10-11
+
+# VERSION=RC1
+
+
+#[paths]
+BWA=/usr/local/bioinfo/src/bwa/bwa-0.6.1/bwa
+SAMTOOLS=/usr/local/bioinfo/src/samtools/samtools-0.1.19/samtools
+BCFTOOLS=/usr/local/bioinfo/src/samtools/samtools-0.1.19/bcftools/bcftools
+
+WORKING_DIR=$(pwd)
+
+LIB_PATH=/save/project/ijpb/bioinfo-code/lib/sh/bash-common_lib.inc
+LIB_PATH_SM=/save/project/ijpb/bioinfo-code/lib/sh/singlemeiosis-pipeline_lib.inc
+
+GENOMES_BASE_PATH=/save/project/ijpb/bank/GENOME
+INDEXES_BASE_PATH=/save/project/ijpb/bank/INDEX
+
+BWA_INDEXES=BWA
+SAMTOOLS_INDEXES=samtools
+
+# TODO: Add all dependencies paths here
+
+#[genome_alias]
+# parent 1
+papa=Ath-Col0-Vers-WG
+papa_short=Col
+# parent 2
+mama=Ath-Ler0-LUHQ-WG
+mama_short=Ler
+# parents 1 & 2
+papamama=Ath-Coller0-Vers-LUHQ-WG
+papamama_short=coller0
+
+
+#[bwa_aln]
+k=2
+t=2
+R=4
+n=1
+o=3
+l=33
+
+#[bwa_sampe]
+a=1000
+n=1
+N=0
+
+#[filtering]
+MAPQ_min=13
+MM_max=0
+
+#[samtools_view]
+
+#[samtools_mpileup]
+Q=20
+u=TRUE
+B=TRUE
+D=TRUE 
+
+#[bcftools_view]
+#I=TRUE
+G=TRUE
+#N=TRUE
+
+

@@ -1,0 +1,180 @@
+\documentclass[10pt]{article}
+\usepackage[a4paper,left=2.5cm,top=2.5cm,bottom=2.5cm,right=2.5cm,ignoreheadfoot]{geometry}
+\usepackage[francais]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{helvet}
+\usepackage[titletoc]{appendix}
+\usepackage{tocloft}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\setlength{\parindent}{0em}
+\setlength{\parskip}{.5em}
+
+\usepackage{sectsty}
+\sectionfont{\sffamily\bfseries\color{RoyalBlue}\sectionrule{0pt}{0pt}{-1ex}{1pt}}
+\subsectionfont{\sffamily\bfseries\color{RoyalBlue}}
+\subsubsectionfont{\sffamily\bfseries\color{RoyalBlue}}
+
+\usepackage{Sweave}
+
+\begin{document}
+
+\SweaveOpts{width=5.5,height=5.5,resolution=150}
+\SweaveOpts{concordance=TRUE}
+
+\author{Delphine Charif & Joseph Tran & Fabienne Granier}
+
+\title{Convertir des fichiers de variants (VCF-like) en VCF}
+
+\maketitle
+
+\begin{abstract}
+Il existe de nombreux formats de fichiers de variants à disposition sur le site de 1001 genomes (\url{http://1001genomes.org/index.html}).
+Les données sont issues de différents projets (\url{http://1001genomes.org/datacenter/}) qui utilisent des pipelines d'identification de variants ayant chacun leur propre format de sortie. Les principaux pipelines utilisés sont:
+\begin{itemize}
+\item la suite IMR-DENOM (\url{http://mus.well.ox.ac.uk/19genomes/IMR-DENOM/}) qui propose le format sdi-9 En effet chaque pipeline d'identification de variants propose son propre format de sortie.
+\item la suite maq-0.7.1 (\url{http://maq.sourceforge.net/}) qui propose un format pour les SNPs (JGI-aa : StrainName.snp.aa.txt) et un format pour les petits indels homozygotes (JGI-indel : StrainName.indelpe.hom.txt) (JGI).
+\item la suite Shore (\url{http://shore.sourceforge.net/wiki/}) qui fournit un fichier tabulé à 8 champs avec les SNPs et délétions d'une base (Salk, MPI, CeBiTec).
+\item enfin, nous avons le format VAST, format local Versailles.
+\end{itemize}
+
+Dans ce document, nous déroulons la procdédure qui permettra de réaliser les conversions 
+de ces différents formats en VCF (Variant Call Format : \url{http://samtools.github.io/hts-specs/VCFv4.2.pdf}).
+\end{abstract}
+
+\section{ Préparer son environnement de travail sous R (temporaire) } 
+
+<<loadEnv,eval=FALSE>>=
+# Les packages dont dépendent ces fonctionnalités 
+library("VariantAnnotation")
+library("seqinr")
+
+# Les fonctionnalités R
+source("/usr/local/lib/R/VariantUtils/lib_VCFlikeParser.R")
+
+
+# Les DATAS
+TAIR10 <- read.fasta("/data/SEQUENCES/GENOME/Ath-Col0-tair10-WG/Ath-Col0-tair10-WG.mfa")
+TAIR8 <- read.fasta("/data/SEQUENCES/GENOME/Ath-Col0-tair8-WG/Ath-Col0-tair8-WG.mfa")
+RefGenomes <- list("TAIR10"=TAIR10, "TAIR8"=TAIR8)
+@
+
+\section{ Les fonctions de conversion}
+Afin de convertir ces différents formats VCF-like en format VCF, il va falloir importer les fichiers
+dans R, puis les convertir en VCF à l'aide d'un parseur (VCFlikeParser) qui possède une méthode de conversion spécialisée (ConvertToVcf) pour chaque format.
+
+
+L'appel au parseur devra comporter quatre arguments
+\begin{itemize}
+\item Format: Le nom du format d'origine ("JGI-aa","JGI-indel","sdi-9","VAST")
+\item File: Le chemin du fichier dans le format d'origine
+\item RefGenome: Le nom du génome de référence ("TAIR10" ou "TAIR8")
+\item Sample: le nom de l'accession
+\end{itemize}
+
+ATTENTION : dans certains cas, le nom des chromosomes dans le fichier au format d'origine ne correspond pas au nom des chromosomes dans TAIR10 (Chr1, Chr2, Chr3, Chr4, Chr5, chloroplast, mitochondria). Dans ce cas, lors de l'appel de testParseur"Format", un message d'alerte vous sera adressé et il vous sera demandé de spécifier le nom du chromosome dans le fichier d'origine dans l'ordre suivant : chloroplast, Chr1, Chr2, Chr3, Chr4, Chr5, mitochondria. \\
+
+Exemple de message d'erreur avec le nom du chromosome, ici "1" qui ne matche pas avec "Chr1" de Tair10. \\
+
+ChromosomeNames \\
+1   dont fit the names of the RefGenome, please enter the names of the Chromosome in the following order: \\
+chloroplast Chr1 Chr2 Chr3 Chr4 Chr5 mitochondria \\ 
+if some chromosome are missing, please enter NA \\
+
+Dans ce cas précis : corriger de la manière suivante en notant NA pour les chromosomes manquants (ici, tous sauf le chromosome 1):\\
+1: NA \\
+2: 1 \\ 
+3: NA \\
+4: NA \\
+5: NA \\
+6: NA \\
+7: NA \\
+
+
+Exemples relatif aux différents formats : \\
+
+
+<<FichiersEx1,eval=FALSE>>=
+
+# TestInstanceParserClassJGI-aa
+  testParserJGIaa <- new("VCFlikeParser",
+        Format="JGI-aa",
+        File="/projects/Mitochondrie/Cytopheno/noyaux/CONVERSION2VCF/TESTS/JGI_test_aa.txt",
+        RefGenome="TAIR10",
+        Sample="Ac-0")
+  writeVcf(testParserJGIaa@VCFlike@VCF,
+        file="/projects/Mitochondrie/Cytopheno/noyaux/CONVERSION2VCF/TESTS/JGIaa_test_aa.vcf")
+
+
+# TestInstanceParserClassSDI-9
+  testParserSdi9 <- new("VCFlikeParser",
+        Format="sdi-9",
+        File="/projects/Mitochondrie/Cytopheno/noyaux/CONVERSION2VCF/TESTS/sdi-9_test_Bur0.txt",
+        RefGenome="TAIR10",
+        Sample="bur-0")
+  writeVcf(testParserSdi9@VCFlike@VCF,
+        file="/projects/Mitochondrie/Cytopheno/noyaux/CONVERSION2VCF/TESTS/sdi-9_test_Bur0.vcf")
+
+
+# TestInstanceParserClassJGI-indel
+  testParserJGIindel <- new("VCFlikeParser",Format="JGI-indel",
+          File="/projects/Mitochondrie/Cytopheno/noyaux/CONVERSION2VCF/TESTS/JGI_test_indel.txt",
+          RefGenome="TAIR10",
+          Sample="Ac-0")
+  writeVcf(testParserJGIindel@VCFlike@VCF,
+           file="/projects/Mitochondrie/Cytopheno/noyaux/CONVERSION2VCF/TESTS/JGI_test_indel.vcf")
+ 
+# TestInstanceParserVAST
+  testParserVAST <- new("VCFlikeParser",Format="VAST",
+          File="/projects/Mitochondrie/Cytopheno/noyaux/CONVERSION2VCF/TESTS/VAST_test_Cvi.txt",
+          RefGenome="TAIR10",Sample="Cvi")
+  writeVcf(testParserVAST@VCFlike@VCF,
+          file="/projects/Mitochondrie/Cytopheno/noyaux/CONVERSION2VCF/TESTS/VAST_test_Cvi.vcf")
+
+# TestInstanceParserSALK
+  testParserSALK <- new("VCFlikeParser",Format="SALK",
+            File="/projects/Mitochondrie/Cytopheno/noyaux/CONVERSION2VCF/TESTS/SALK_test_etna-2.txt",
+            RefGenome="TAIR10",Sample="etna-2")
+  writeVcf(testParserSALK@VCFlike@VCF,
+           file="/projects/Mitochondrie/Cytopheno/noyaux/CONVERSION2VCF/TESTS/SALK_test_etna-2.vcf")
+@
+
+\section{ Les changements de coordonnées et formatage des allèles effectués}
+
+\subsection{sdi-9}
+\begin{itemize}
+\item Reformatage des allèles de références et alternatifs en ajoutant la base en position -1 de
+l'indel.
+\item Résolution du code IUPAC en listant les allèles alternatifs pour les SNPs.
+\end{itemize}
+
+\subsection{JGI-indel}
+
+\begin{itemize}
+\item Reformatage des allèles de références et alternatifs en ajoutant la base en position -1 de
+l'indel.
+\item A la position des indels de ce format est retranché 1 pour convenir au format VCF.
+\end{itemize}
+
+\subsection{SALK}
+
+\begin{itemize}
+\item Pour les délétions de 1 bp, reformatage des allèles de références et alternatifs en ajoutant la base en position -1 de
+l'indel.
+\item La position des indels est modifiée en donnant la position moins 1 base, telle que spécifiée dans le format VCF.
+\end{itemize}
+
+\section{ Les champs des différents formats}
+
+Nous avons effectué les correspondances entre les formats d'origine et les champs requis dans le
+format VCF: CHROM, POS, ID ,REF, ALT, QUAL, INFO
+\\
+Nous avons sélectionné les informations qui nous semblaient pertinentes dans les formats de départ
+pour les reporter dans le champs INFO du fichier VCF. Quand ils étaient présents: DP, SCORE ...
+\\
+Pour le champs ID, nous avons concaténé les champs CHROM, POS, REF et ALT en les séparant par un "\_".
+Cet ID est ainsi unique.
+
+\end{document}

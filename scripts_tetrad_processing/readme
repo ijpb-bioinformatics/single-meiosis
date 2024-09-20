@@ -1,0 +1,4 @@
+- singlemeiosis.sh: main script
+- singlemeiosis-pipeline_genotoul_V3: configuration file 
+- Launch_Tetrad_Analysis_genotoul_V3.R: R script call by singlemeiosis.sh
+- 

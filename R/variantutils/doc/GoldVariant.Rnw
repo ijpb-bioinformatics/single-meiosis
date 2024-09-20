@@ -1,0 +1,362 @@
+\documentclass[a4paper]{article}
+\usepackage{graphicx} 
+\usepackage[utf8]{inputenc}
+\usepackage[francais]{babel}
+\usepackage[a4paper,hmargin=2cm,vmargin={2cm,3cm}]{geometry}
+\usepackage[cm]{fullpage}
+\usepackage{longtable}
+\usepackage[nottoc, notlof, notlot]{tocbibind}
+\usepackage{appendix}
+\usepackage{color}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\title{Exploration de la liste des polymorphismes Col-0/Ler-0 (\cite{Gan:2011eg}) et selection des marqueurs de qualités pour le genotypage des tétrades dans le cadre du projet Single Meiosis}
+
+\author{Charif D.}
+
+\maketitle
+
+\tableofcontents \clearpage
+
+\section{Critères}
+
+Afin de selectionner les polymorphismes robustes pour l'analyse des tétrades, les informations suivantes ont été ajoutées
+à celles données en sortie de pipeline IMRDENOM. 
+
+\begin{itemize}
+\item IsInTE
+\item IsHeterozygous
+\item IsInCNV
+\item colDP.F1
+\item lerDP.F1
+\item colDP.Parent
+\item lerDP.Parent
+\end{itemize}
+
+Le fichier donnant l'ensemble de ces informations est
+\url{/projects/Single_Meiosis/Ressources/Ler0/Variant_All/newsdi\_with\_annotation\_with\_F1\_and\_Parent.txt}
+
+La selection des polymorphismes robustes pour l'analyse des tétrades a été effectuée avec les critères suivants:
+
+
+\begin{itemize}
+\item Supression des polymorphismes dont la qualité est inferieure à un score phred de 13(soit 5 \% de 
+chance que l'identification soit incorrecte)
+\item Supression des polymorphismes prédits comme hétérozygotes.
+\item Supression des polymorphismes se situant dans des zones du genome prédite comme étant un CNV.
+\item On garde les variants homozygote chez les Parents et qui présentent une bonne couverture 
+  (exclusions des 2.5 \% les moins couverts et 2.5 \% les plus couverts sur col, exclusion des 2.5 \% 
+  les moins couvert et des 2.5 \% les plus couverts sur ler).
+\item On garde les variants heterozygotes en F1 et qui présentent une bonne couverture. 
+  (exclusions des 2.5 \% les moins couverts sur col en F1, exclusions des 2.5 \% les moins couverts 
+  sur Ler en F1 et exclusion des 2.5 \% les plus couverts sur la somme Col+Ler).
+\end{itemize}
+
+<<library>>=
+library(plyr)
+library(stringr)
+library(xtable)
+library(gridExtra)
+library(limma)
+library(ggplot2)
+library(VariantAnnotation)
+library(seqinr)
+
+sourceDir <- function(path, trace = TRUE, ...) {
+  for (nm in list.files(path, pattern = "[.][RrSsQq]$")) {
+    if(trace) cat(nm,":")
+    source(file.path(path, nm), ...)
+    if(trace) cat("\n")
+  }
+}
+
+sourceDir("/projects/Single_Meiosis/Ressources/Ler0/variantutils/R/")
+
+TAIR10 <- read.fasta("/data/SEQUENCES/GENOME/Ath-Col0-tair10-WG/Ath-Col0-tair10-WG.mfa")
+RefGenomes <- RefGenomes <- list("TAIR10"=TAIR10) 
+
+p=read.table("/projects/Single_Meiosis/Ressources/Ler0/Variant_All/newsdi_with_annotation_with_F1_and_Parent.txt",h=TRUE)
+@   
+
+\section{Détection des valeurs abérrantes pour pouvoir visualiser les distributions de couvertures des parents et de la F1 sur les génomes de Col et Ler}
+
+\subsection{Valeurs extrêmes}
+
+<<DPdistribution1,fig=TRUE>>=
+
+ggplot(data=p)+geom_histogram(aes(x=colDP.F1,fill="colDP.F1"),binwidth=1, alpha=.2, position="identity") +
+  facet_wrap(~ Chrom , ncol=1) +
+  geom_histogram(aes(x=lerDP.F1,fill="lerDP.F1"),binwidth=1, alpha=.2, position="identity") + 
+  geom_histogram(aes(x=colDP.Parent,fill="colDP.Parent"),binwidth=1, alpha=.2, position="identity") + 
+  geom_histogram(aes(x=lerDP.Parent,fill="lerDP.Parent"),binwidth=1, alpha=.2, position="identity") +
+  scale_fill_discrete(name = "Colors for DP distribution")  
+
+summary(p$colDP.F1)
+sort(p$colDP.F1,decreasing=TRUE)[1:50]
+summary(p$lerDP.F1)
+sort(p$lerDP.F1,decreasing=TRUE)[1:50]
+summary(p$colDP.Parent)
+sort(p$colDP.Parent,decreasing=TRUE)[1:50]
+summary(p$lerDP.Parent)
+sort(p$lerDP.Parent,decreasing=TRUE)[1:50]
+@
+
+\subsection{Distribution des DP après retrait des DP trop élevés}
+
+<<DPdistribution2,fig=TRUE>>=
+
+colDP.F1.F <- which(p$colDP.F1>30)
+length(colDP.F1.F)
+lerDP.F1.F <- which(p$lerDP.F1>30)
+length(lerDP.F1.F)
+colDP.Parent.F <- which(p$colDP.Parent>30)
+length(colDP.Parent.F)
+lerDP.Parent.F <- which(p$lerDP.Parent>30)
+length(lerDP.Parent.F)
+
+filtreDP <- unique(c(colDP.F1.F ,lerDP.F1.F,colDP.Parent.F,lerDP.Parent.F ))
+
+pF <- p[-filtreDP,]
+
+ggplot(data=pF)+geom_histogram(aes(x=colDP.F1,fill="colDP.F1"),binwidth=1, alpha=.3, position="identity") +
+  facet_wrap(~ Chrom , ncol=1)+
+  geom_histogram(aes(x=lerDP.F1,fill="lerDP.F1"),binwidth=1, alpha=.3, position="identity") +
+  geom_histogram(aes(x=colDP.Parent,fill="colDP.Parent"),binwidth=1, alpha=.3, position="identity") +
+  geom_histogram(aes(x=lerDP.Parent,fill="lerDP.Parent"),binwidth=1, alpha=.3, position="identity") + 
+  scale_fill_discrete(name = "Colors for DP distribution")    
+@
+
+\subsection{Nombre de polymorphisme non couvert chez les parents ou la F1}
+
+<<NaFilter,fig=TRUE>>=
+
+FilterParentColNA <- is.na(p$colDP.Parent)
+FilterParentLerNA <- is.na(p$lerDP.Parent)
+FilterF1ColNA <- is.na(p$colDP.F1)
+FilterF1LerNA <- is.na(p$lerDP.F1)
+vennNA <- data.frame(FilterParentColNA,FilterParentLerNA,FilterF1ColNA,FilterF1LerNA)
+vennDiagram(vennCounts(vennNA),cex=c(1,1,1))
+Goldp <- p[-which(FilterParentColNA==TRUE |
+                  FilterParentLerNA==TRUE | 
+                  FilterF1LerNA==TRUE | 
+                  FilterF1ColNA==TRUE),]
+dim(Goldp)
+@
+
+\subsection{Calcul des DP min et Max et présentation des polymorphismes à filtrer en fonction du DP sous forme d'un diagramme de Venn }
+
+<<DPFilter,fig=TRUE>>=
+
+FilterParentCol <- FilterDP(Goldp$colDP.Parent,distr=c("Normal"),
+                            side=("bilateral"),filter=c(0.025,0.025))
+FilterParentLer <- FilterDP(Goldp$lerDP.Parent,distr=c("Normal"),
+                            side=("bilateral"),filter=c(0.025,0.025))
+FilterF1Col <- FilterDP(Goldp$colDP.F1,distr=c("Normal"),
+                        side=("bilateral"),filter=c(0.025,0.025))
+FilterF1Ler <- FilterDP(Goldp$lerDP.F1,distr=c("Normal"),
+                        side=("bilateral"),filter=c(0.025,0.025))
+
+vennDP <- data.frame(FilterParentCol$filter,FilterParentLer$filter,FilterF1Col$filter,FilterF1Ler$filter)
+vennDiagram(vennCounts(vennDP),cex=c(0.7,0.7,0.7))
+GoldP <- Goldp[-which(FilterParentCol$filter==TRUE |
+                        FilterParentLer$filter==TRUE | 
+                        FilterF1Ler$filter==TRUE |  
+                        FilterF1Col$filter==TRUE),]
+dim(GoldP)
+@
+
+\subsection{ Filtre qualité}
+
+<<PhredFilter>>=
+
+GoldPS <- GoldP[-which(GoldP$PhredScore <= 13),]
+dim(GoldPS)
+@
+
+\subsection{ Filtre des hétérozygotes}
+
+<<HeterozygousFilter>>=
+
+GoldPSH <- GoldPS[-which((GoldPS$DetScore == 2) | (GoldPS$IsHeterozygous == TRUE)),]
+dim(GoldPSH)
+@
+
+\subsection{Distribution des DP pour les variants robustes}
+
+<<Final,fig=TRUE>>=
+
+ggplot(data=GoldPSH)+geom_histogram(aes(x=colDP.F1,fill="colDP.F1"),binwidth=1, alpha=.2, position="identity") +
+  facet_wrap(~ Chrom , ncol=1) + 
+  geom_histogram(aes(x=lerDP.F1,fill="lerDP.F1"),binwidth=1, alpha=.2, position="identity") +
+  geom_histogram(aes(x=colDP.Parent,fill="colDP.Parent"),binwidth=1, alpha=.2, position="identity") +
+  geom_histogram(aes(x=lerDP.Parent,fill="lerDP.Parent"),binwidth=1, alpha=.2, position="identity") + 
+  scale_fill_discrete(name = "Colors for DP distribution")  
+@
+
+Les variants robustes sont au nombre de \Sexpr{dim(GoldPSH)[1]}.
+
+\section{Description de la liste des variants robustes: Coverage, Chrom, Indel repartition ...}
+
+<<density,fig=TRUE>>=
+load("/projects/Single_Meiosis/Ressources/Ler0/variantutils/data/ColGenomeFeatures.Rdata")
+dfRect <- ColGenomeFeatures$ChromosomeFeatures$centromere[,-4]
+names(dfRect) <- c("Chrom","xmin","xmax")
+dfRect$ymin=rep(0,dim(dfRect)[1])
+dfRect$ymax=rep(1500,dim(dfRect)[1])
+dfRect2 <- ColGenomeFeatures$ChromosomeFeatures$heterochromatine[,-4]
+names(dfRect2) <- c("Chrom","xmin","xmax")
+dfRect2$ymin=rep(0,dim(dfRect2)[1])
+dfRect2$ymax=rep(1500,dim(dfRect2)[1])
+ggplot(data=GoldPSH)+geom_histogram(aes(x=colPos),binwidth=100000) +
+  facet_wrap(~Chrom,ncol=1) +
+  geom_rect(data=dfRect,aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax),alpha=0.3,colour="red") +
+  geom_rect(data=dfRect2,aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax),alpha=0.3)
+@ 
+
+
+\subsection{Convert newsdi to vcf, annotate and export golds SNPs to vcf}
+
+<<Annotate>>=
+testParser <- new("VCFlikeParser",Format="RefPol",
+                  File="/projects/Single_Meiosis/Ressources/Ler0/Variant_All/newsdi_with_annotation_with_F1_and_Parent.txt",
+                  RefGenome="TAIR10",Sample="Ler0_Polymorphism")
+
+# Annotate for filter DP Parent Col 
+testParser@VCFlike@VCF <- AnnotateVCF(testParser@VCFlike@VCF, 
+                                      vcfField="COL_DP_Parent", 
+                                      vcfFieldType=c("info"), 
+                                      FilterType=c("numeric"), 
+                                      FilterName="DP_Parent_Col_Min", 
+                                      FilterValue= FilterParentCol$values["min"], 
+                                      FilterDescription= "DP Parent Col",
+                                      FilterSign="less", 
+                                      FilterNA=TRUE,
+                                      append=TRUE)
+
+# Annotate for filter   DP Parent Col
+testParser@VCFlike@VCF <- AnnotateVCF(testParser@VCFlike@VCF,
+                                      vcfField="COL_DP_Parent",
+                                      vcfFieldType=c("info"), 
+                                      FilterType=c("numeric"),
+                                      FilterName="DP_Parent_Col_Max", 
+                                      FilterValue= FilterParentCol$values["max"], 
+                                      FilterDescription="DP Parent Col", 
+                                      FilterSign="more",  
+                                      append=TRUE)
+
+# Annotate for filter  DP Parent Ler
+ testParser@VCFlike@VCF <- AnnotateVCF(testParser@VCFlike@VCF, 
+                                       vcfField="LER_DP_Parent", 
+                                       vcfFieldType=c("info"), 
+                                       FilterType=c("numeric"), 
+                                       FilterName="DP_Parent_Ler_Min", 
+                                       FilterValue= FilterParentLer$values["min"], 
+                                       FilterDescription="DP Parent Ler", 
+                                       FilterSign="less",  
+                                       FilterNA=TRUE,
+                                       append=TRUE)
+
+# Annotate for filter  DP Parent Ler
+testParser@VCFlike@VCF <- AnnotateVCF(testParser@VCFlike@VCF,
+                                      vcfField="LER_DP_Parent",
+                                      vcfFieldType=c("info"), 
+                                      FilterType=c("numeric"), 
+                                      FilterName="DP_Parent_Ler_Max",
+                                      FilterValue= FilterParentLer$values["max"], 
+                                      FilterDescription="DP Parent Ler", 
+                                      FilterSign="more", 
+                                      append=TRUE)
+
+# Annotate for filter DP F1 Ler
+testParser@VCFlike@VCF <- AnnotateVCF(testParser@VCFlike@VCF, 
+                                      vcfField="LER_DP_F1", 
+                                      vcfFieldType=c("info"), 
+                                      FilterType=c("numeric"),
+                                      FilterName="DP_F1_Ler_Min", 
+                                      FilterValue= FilterF1Ler$values["min"], 
+                                      FilterDescription="DP F1 Ler", 
+                                      FilterSign="less", 
+                                      FilterNA=TRUE,  
+                                      append=TRUE)
+
+# Annotate for filter DP F1 Ler
+testParser@VCFlike@VCF <- AnnotateVCF(testParser@VCFlike@VCF, 
+                                      vcfField="LER_DP_F1", 
+                                      vcfFieldType=c("info"), 
+                                      FilterType=c("numeric"), 
+                                      FilterName="DP_F1_Ler_Max", 
+                                      FilterValue= FilterF1Ler$values["max"], 
+                                      FilterDescription="DP F1 Ler", 
+                                      FilterSign="more",  
+                                      append=TRUE)
+
+# Annotate for filter DP F1 Col
+testParser@VCFlike@VCF <- AnnotateVCF(testParser@VCFlike@VCF, 
+                                      vcfField="COL_DP_F1", 
+                                      vcfFieldType=c("info"), 
+                                      FilterType=c("numeric"), 
+                                      FilterName="DP_F1_Col_Min", 
+                                      FilterValue= FilterF1Col$values["min"], 
+                                      FilterDescription="DP F1 Col",
+                                      FilterSign="less", 
+                                      FilterNA=TRUE,
+                                      append=TRUE)
+
+# Annotate for filter DP F1 Col
+testParser@VCFlike@VCF <- AnnotateVCF(testParser@VCFlike@VCF, 
+                                      vcfField="COL_DP_F1",
+                                      vcfFieldType=c("info"), 
+                                      FilterType=c("numeric"),
+                                      FilterName="DP_F1_Col_Max",
+                                      FilterValue= FilterF1Col$values["max"], 
+                                      FilterDescription="DP F1 Col",
+                                      FilterSign="more",
+                                      append=TRUE)
+
+# Annotate for filter Phred score
+testParser@VCFlike@VCF <- AnnotateVCF(testParser@VCFlike@VCF,
+                                      vcfField="QUAL",
+                                      vcfFieldType=c("fixed"), 
+                                      FilterType=c("numeric"),
+                                      FilterName="q",
+                                      FilterValue= 13, 
+                                      FilterDescription="Quality score",
+                                      FilterSign="less",
+                                      append=TRUE)
+
+# Annotate for filter heterozygous 
+testParser@VCFlike@VCF <- AnnotateVCF(testParser@VCFlike@VCF, 
+                                      vcfField="IS_HETEROZYGOUS", 
+                                      vcfFieldType=c("info"), 
+                                      FilterType=c("character"),
+                                      FilterName="Het",
+                                      FilterValue= "TRUE", 
+                                      FilterDescription="Is heterozygous",
+                                      append=TRUE)
+
+# Annotate for filter heterozygous 
+testParser@VCFlike@VCF <- AnnotateVCF(testParser@VCFlike@VCF, 
+                                      vcfField="IMR_DENOM_SCORE", 
+                                      vcfFieldType=c("info"), 
+                                      FilterType=c("character"),
+                                      FilterName="IDScore",
+                                      FilterValue= "2", 
+                                      FilterDescription="IMR/DENOM score",
+                                      append=TRUE)
+@
+
+<<export>>=
+writeVcf(testParser@VCFlike@VCF,file="/projects/Single_Meiosis/Ressources/Ler0/Gold_Variant_475129/newsdi_with_annotation_with_F1_and_Parent.vcf")
+@
+
+
+\bibliographystyle{plain}
+\bibliography{biblio}
+
+\end{document}
+
+
+
+

@@ -1,0 +1,170 @@
+# EM algo for the MLE of a (BINARY) continuous time Markov process
+# with beta-binomial emssions
+# lambda : 0 -> 1; mu : 1 -> 0; Q = (-\lambda \lambda; \mu -\mu)
+# Analysis of the 4 tetrades independetly
+rm(list=ls())
+#setwd('/mnt/mmip/robin/RECHERCHE/RUPTURES/HMM-NCO/Pgm/')
+
+source('/home/dcharif/save/bioinfo-dev/r-dev/hmm-nco/functions/FunctionsContTimeHMM.R'); 
+source('/home/dcharif/save/bioinfo-dev/r-dev/hmm-nco/functions/FunctionsBinaryContTimeHMM.R'); 
+source('/home/dcharif/save/bioinfo-dev/r-dev/hmm-nco/functions/FunctionsHMMGeneral.R')
+source('/home/dcharif/save/bioinfo-dev/r-dev/hmm-nco/functions/FunctionsHMMBetaBinomial.R')
+
+library(mclust)
+
+# Parameters
+args <- commandArgs(trailingOnly=TRUE)
+
+
+DataDir = args[1]
+ResDir = args[2]
+DataName = args[3]
+
+ColorCode = c(4, 1)
+
+# Fit
+load(paste(DataDir,"/" ,DataName, '.Rdata', sep=''))
+tetrade = get(paste(DataName))
+data.M = tetrade[[1]]
+
+
+# Choix de l'ordre des chromosomes à concaténer
+Concat0 <- 1:5
+Concat1 <- sample(x=Concat0,size=5,replace=FALSE)
+
+# Choix de l'Intervalle à considerer entre deux chromosomes 
+# pour réinitialiser la mémoire sur la distance avant le prochain
+# evenement.
+# Ne pas modifier les coordonnées du premier chromosome
+# Puis pour chaque chromosome suivant faire: 
+# Ajouter 2*(la position du dernier marqueur du chromosome N-1) <=> 2x la taille du chrom 
+# à toutes les positions du chromosome N. round(LastPos/10^6,0)*2*10^6 
+
+# Création de deux chromosomes artificielles
+# 1=> concat1 
+# 2 => concat2
+nbMarqByChrom <- table(data.M$Chrom)[Concat0]
+IdLastMarqByChrom <- cumsum(nbMarqByChrom)
+IdFirstMarqByChrom <- IdLastMarqByChrom-nbMarqByChrom+1
+PosLastMarqByChrom <- data.M$Pos[IdLastMarqByChrom]
+PosToAddAfterChrom <- c(0,cumsum(round(PosLastMarqByChrom/10^6,0)*2*10^6)+cumsum(PosLastMarqByChrom))[-6]
+
+nbMarqByChrom1 <- table(data.M$Chrom)[Concat1]
+IdLastMarqByChrom1 <- cumsum(nbMarqByChrom1)
+IdFirstMarqByChrom1 <- IdLastMarqByChrom1-nbMarqByChrom1+1
+PosLastMarqByChrom1 <- PosLastMarqByChrom[Concat1]
+PosToAddAfterChrom1 <- c(0,cumsum(round(PosLastMarqByChrom1/10^6,0)*2*10^6)+cumsum(PosLastMarqByChrom1))[-6]
+
+save_Chrom <-data.M$Chrom
+save_Pos <-data.M$Pos
+
+Chrom1 <- rep("Concat1",length(save_Chrom))
+Chrom1B <-rep(paste("Chr",Concat1,sep=""),nbMarqByChrom[Concat1]) 
+
+Pos1<-rep(NA,length(data.M$Chrom))
+
+for(i in 1:5){
+Pos1[IdFirstMarqByChrom1[i]:IdLastMarqByChrom1[i]]<-data.M$Pos[IdFirstMarqByChrom[Concat1[i]]:IdLastMarqByChrom[Concat1[i]]] + PosToAddAfterChrom1[i] 
+#Pos0[IdFirstMarqByChrom[i]:IdLastMarqByChrom[i]]<-data.M$Pos[IdFirstMarqByChrom[Concat0[i]]:IdLastMarqByChrom[Concat0[i]]] + PosToAddAfterChrom[i]
+}
+
+# Construct new tetrad
+ newtetrade=list("M1"=NULL,"M2"=NULL,"M3"=NULL,"M4"=NULL)
+ for(i in 1:4){
+ newtetrade[[i]]$ID=as.factor(paste(Chrom1B,Pos1,sep="_"))
+ newtetrade[[i]]$Chrom=as.factor(Chrom1)
+ newtetrade[[i]]$Pos=c(Pos1)
+ newtetrade[[i]]$R=tetrade[[i]]$R
+ newtetrade[[i]]$Y=tetrade[[i]]$Y
+ newtetrade[[i]]$Ind=tetrade[[i]]$Ind
+ }
+
+
+tetrade=newtetrade
+
+data.M=tetrade[[1]]
+Chr.list = levels(data.M$Chrom) 
+Chr.nb = length(Chr.list)
+M.list = names(tetrade)
+I = length(M.list)
+
+
+# Modification des Positions 
+
+Chr = 'Chr4'
+for (c in  1:Chr.nb){
+  Chr = Chr.list[c]
+  cat('******************************************************\n')
+  cat(DataName, Chr, ': initialization \n')
+  Y = c(); R = c(); RateInit = rep(0, 2)
+  for (i in 1:I){
+    # Data & Init
+    #load(paste(DataDir,"/", DataName, '.Rdata', sep=''))
+    data.M = tetrade[[i]]
+    Yi = data.M$Y; Y = cbind(Y, Yi[which(data.M$Chrom==Chr)])
+    Ri = data.M$R; R = cbind(R, Ri[which(data.M$Chrom==Chr)])
+    Pos = data.M$Pos; Pos = Pos[which(data.M$Chrom==Chr)]
+  }
+  # Data reduction
+  # Rate = 10; n = length(Pos); redSel = Rate*(1:floor(n/Rate)); Y = Y[redSel, ]; R = R[redSel, ]; Pos = Pos[redSel]; n = length(Pos)
+  diffPos = diff(Pos); 
+
+  # Init
+  RateInit = TauInit = list()
+  for (i in 1:I){
+    cat('EMdisc', i, '\n')
+    EMdisc = FitHMMBetaBinom(Y[, i], R[, i], K=2)
+    TauInit[[i]] = EMdisc$tau
+    RateInit[[i]] = InitRateFromTransProba(c(EMdisc$Pi[1, 2], EMdisc$Pi[2, 1]), diffPos)
+  }
+  print(unlist(lapply(1:I, function(i){RateInit[[i]]})))
+  CommonRateInit = matrix(0, I, 2)
+  invisible(sapply(1:I, function(i){CommonRateInit[i, ] <<- RateInit[[i]]}))
+  CommonRateInit = exp(apply(log(CommonRateInit), 2, median))
+ 
+  
+  # EM same rate
+  cat('******************************************************\n')
+  cat(DataName, Chr, ': same rates:\n')
+  EMsame = F_EMJointBinContHMMBinom1D_SameRates(Y, R, diffPos, CommonRateInit, TauInit)
+  EMsame$MAP = lapply(1:I, function(i){apply(EMsame$Tau[[i]], 1, which.max)})
+  EMsame$Vit = lapply(1:I, function(i){F_HetViterbi(EMsame$Pi, EMsame$Nu, EMsame$logPhi[[i]])})
+
+  # Split By chrom and replace Chrom and Pos
+  
+  save(EMsame, file=paste(ResDir, "/",DataName, '-', Chr, '-JointCHMM-SameRates.Rdata', sep=''))
+  SplitEMsame(EMsame,Chrom1B)	
+}
+
+SplitEMsame <- function(EMsameConcat,Chrom){
+	tmp=EMsameConcat	
+	for(i in 1:5){
+		print(i)
+		tmp$gamma=EMsameConcat$gamma
+		tmp$Rate=EMsameConcat$Rate
+		tmp$Tau=lapply(EMsameConcat$Tau,function(x){
+				x[which(Chrom==paste("Chr",i,sep="")),]
+		})
+		Lpar<-length(which(Chrom==paste("Chr",i,sep="")))
+		tmp$Eta=lapply(EMsameConcat$Eta,function(x){
+				x[which(Chrom==paste("Chr",i,sep=""))[-Lpar],]
+		})
+		tmp$logL=EMsameConcat$logL
+		tmp$logPhi=lapply(EMsameConcat$logPhi,function(x){
+				x[which(Chrom==paste("Chr",i,sep="")),]
+		})
+		tmp$Pi=EMsameConcat$Pi[which(Chrom==paste("Chr",i,sep=""))[-Lpar],]
+		tmp$Nu=EMsameConcat$Nu
+		tmp$MAP=lapply(EMsameConcat$MAP,function(x){
+				x[which(Chrom==paste("Chr",i,sep=""))]
+		})
+		tmp$Vit=lapply(EMsameConcat$Vit,function(x){
+				x[which(Chrom==paste("Chr",i,sep=""))]
+		})
+	EMsame=tmp
+	save(EMsame,file=paste("tetrade2-","Chr",i,'-JointCHMM-SameRates.Rdata', sep=''))
+}
+}
+
+
+
