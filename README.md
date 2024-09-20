@@ -14,15 +14,18 @@ Each tetrad's sequencing product is made of 8 files (2 paired-end for each
 
 Example:
 
-tetrad
-    |_ tetrad_M1_s1.fq
-    |_ tetrad_M1_s2.fq
-    |_ tetrad_M2_s1.fq
-    |_ tetrad_M2_s2.fq
-    |_ tetrad_M3_s1.fq
-    |_ tetrad_M3_s2.fq
-    |_ tetrad_M4_s1.fq
-    |_ tetrad_M4_s2.fq
+```bash
+|_tetrad:
+   ├─ tetrad_M1_s1.fq
+   ├─ tetrad_M1_s2.fq
+   ├─ tetrad_M2_s1.fq
+   ├─ tetrad_M2_s2.fq
+   ├─ tetrad_M3_s1.fq
+   ├─ tetrad_M3_s2.fq
+   ├─ tetrad_M4_s1.fq
+   ├─ tetrad_M4_s2.fq
+``` 
+
 
 # Tetrad's processing:
 
@@ -36,16 +39,26 @@ analysis.
 - Launch_Tetrad_Analysis_genotoul_V3.R (sub-script)
  
 
-## bash: single-meiosis/single-meiosis-pipeline
+## bash: 
 
-Authors: J. Tran and D. Charif
+### single-meiosis-pipeline
 
 - Align tetrads on Col + Ler genome 
-- Separate bam by parental genomes (Col and Ler) and call read 
-depth by genome position.
+- Separate bam by parental genomes (Col and Ler) and call read depth by genome position.
 
- output:
+input:
 
+```bash
+   |_Tetrad (*.fq)
+   |_Genomes
+      |_ Col.fasta
+      |_ Ler.fasta 
+``` 
+
+
+output:
+
+```bash
    |_Tetrad
      |_log
      |_M1
@@ -58,10 +71,9 @@ depth by genome position.
      |_M3
      |_M4
     config
+```
 
 ## R: variantutils 
-
-Author: D. Charif and Tran J.
 
 - Process the output of the single-meiosis bash pipeline
 and prepare input for hmm-nco function.
@@ -73,5 +85,14 @@ author: S. Robin
 
 R function to run the HMM model for Tetrad's genotyping .
 
+# Report
+
 ## Rmd: 
+
+Supplementary methods, results and code to reproduce the figures.
+
+## Rmd/Data:
+
+Final datasets
+
 
