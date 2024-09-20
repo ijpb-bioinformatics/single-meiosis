@@ -40,24 +40,24 @@ library(patchwork)
 
 ```{r data, echo=FALSE}
 
-load("TabOfSNP.Rdata")
+load("Data/TabOfSNP.Rdata")
 
-load("Tetrads_genotype_sample_30000.Rdata")
+load("Data/Tetrads_genotype_sample_30000.Rdata")
 
-CO_data <- read.table("CO.txt",h=TRUE,sep="\t") 
+CO_data <- read.table("Data/CO.txt",h=TRUE,sep="\t") 
 
-NCO_data <- read.table("NCO.txt",h=TRUE,sep="\t")
+NCO_data <- read.table("Data/NCO.txt",h=TRUE,sep="\t")
 
 CO_data$Genotype <- factor(CO_data$Genotype, 
                            levels = c("wt","Fa","Fi","FiFa","QAB","QFa","QFi","QFiFa"))
 NCO_data$Genotype <- factor(NCO_data$Genotype, 
                             levels = c("wt","Fa","Fi","FiFa","QAB","QFa","QFi","QFiFa"))
 
-Score <- read.table("HMM_MAP_ByTetrads.txt", h=TRUE)
+Score <- read.table("Data/HMM_MAP_ByTetrads.txt", h=TRUE)
 Score$Genotype <- factor(Score$Genotype, 
                          levels = c("wt","Fa","Fi","FiFa","QAB","QFa","QFi","QFiFa"))
 
-load("ColGenomeFeatures.Rdata")
+load("Data/ColGenomeFeatures.Rdata")
 
 Chrom = as.tibble(unlist(ColGenomeFeatures$ChromosomeLength[1:5]))
 names(Chrom) = "xmax"
@@ -99,7 +99,7 @@ hetero = as.tibble(
 
 ### Schema
 
-### Alignment, filtering and count: Pipeline single-meiosis.sh [author: Charif D. et Tran J.]
+### Alignment, filtering and count: Pipeline single-meiosis.sh 
 
 Tetrad's analysis was carried out by applying the overall strategy
 proposed by @Anderson2011 and implemented in the single-meiosis.sh
@@ -293,14 +293,12 @@ used a bed file from personal communication with Dr. Mezard.
         -   mean converted SNP
         -   number of window with at least one converted SNP
 
-###
-
 # Supplementary Results
 
 ## Overview of sequencing data:
 
-```{r}
-sequencing <- read.table("RawReadsCount.txt",h=TRUE) |>
+```{r , out.width = "70%"}
+sequencing <- read.table("Data/RawReadsCount.txt",h=TRUE) |>
     dplyr::mutate(Depth=round((readCount*2*readSize)/120000000,0))
 
 ggplot(sequencing,aes(x=reorder(Tetrad,Depth,mean),y=Depth,color=Genotype)) + geom_point() +
@@ -312,7 +310,7 @@ ggplot(sequencing,aes(x=reorder(Tetrad,Depth,mean),y=Depth,color=Genotype)) + ge
 ```
 
 ```{r design}
-table(unique(read.table("TetradsProj2TetradsPaper.txt",h=TRUE))$Genotype)
+table(unique(read.table("Data/TetradsProj2TetradsPaper.txt",h=TRUE))$Genotype)
 ```
 
 
@@ -361,7 +359,7 @@ The score is positively correlated to the rate of true positiv NCO
 More the tetrad’s depth is important, less the number of event to check
 is high and the highest is the rate of TP NCO.
 
-```{r scorePlot, width=5, height=5}
+```{r scorePlot, out.width = "50%"}
 ggplot(filter(Score,Tetrad!="QFi_Tet18"),aes(x=MinCov,y=NbEvent.NCO))+
      geom_point(aes(size=NCOconfByIGV,col=Genotype)) + xlab("Minimum Individuals depth in Tetrad") + ylab("Number of NCO events") +
     guides(col = guide_legend(ncol = 3),size=guide_legend(ncol = 3)) + theme_bw()
@@ -810,9 +808,6 @@ distance greater than 1 kb (ie twice the distance separating on average
 2 snps) then we consider that the estimate of the size of the conversion
 is not precise enough to be keeped for the analysis.
 
-Ici, je n'ai pas appliqué ce filtre ... alors les résultats diffèrent un
-peu.
-
 ```{r TLdata, echo=FALSE}
 TL.NCO <- dplyr::select(NCO_data,"Tetrad","Genotype","medianD") |> dplyr::mutate("Type"="NCO") 
 TL.CO  <- dplyr::select(CO_data,"Tetrad","Genotype","GC_tracLength") |> dplyr::rename(medianD="GC_tracLength") |> dplyr::filter(medianD > 0) |> dplyr::mutate("Type"="CO") 
@@ -826,32 +821,33 @@ data <- rbind(TL.NCO, TL.CO)
 
 #### NCO
 
-```{r NCOdesc, , caption="table1"}
-NCO_data %>% group_by(Genotype) %>% dplyr::summarise(n=n(),median.mean=mean(medianD),minTL.mean=mean(minTL),maxTL.mean=mean(maxTL))
+```{r NCOdesc, results='asis'}
+NCOdesc <- NCO_data %>% group_by(Genotype) %>% dplyr::summarise(n=n(),median.mean=mean(medianD),minTL.mean=mean(minTL),maxTL.mean=mean(maxTL))
+print(xtable(NCOdesc,caption="table1"))
 ```
 #### CO
 
-```{r COdesc, caption="table1"}
-CO_data_bis <- read.table("CO_Description.txt",h=TRUE,sep="\t") 
+```{r COdesc, results='asis', align='left'}
+CO_data_bis <- read.table("Data/CO_Description.txt",h=TRUE,sep="\t") 
 CO_data_bis$Genotype <- factor(CO_data_bis$Genotype, levels = c("wt", "Fa","Fi","FiFa","QAB","QFa","QFi","QFiFa"))
-CO_data_bis %>% filter(is.gc==TRUE) %>% group_by(Genotype) %>% dplyr::summarise(n=n(),median.mean=mean(medianD),minTL.mean=mean(minTL),maxTL.mean=mean(maxTL))
+COdesc <- CO_data_bis %>% filter(is.gc==TRUE) %>% group_by(Genotype) %>% dplyr::summarise(n=n(),median.mean=mean(medianD),minTL.mean=mean(minTL),maxTL.mean=mean(maxTL))
+print(xtable(COdesc,caption="table1"))
 ```
 
 #### Comparison of CO and NCO TL within Genotype
 
-```{r}
-# Supposons que vos données combinées soient déjà dans `TL.NCO` et `TL.CO`
+```{r TLtest, fig.align='left'}
 
-# Combiner les données si ce n'est pas déjà fait
+# Combiner les données 
 data <- rbind(TL.NCO, TL.CO)
 
 # Effectuer le test de Wilcoxon pour chaque Genotype
 wilcox_wtOther_co <- data |>
   dplyr::group_by(Genotype) |>
-  dplyr::filter(dplyr::n_distinct(Type) == 2) |> # S'assurer qu'il y a bien des valeurs pour CO et NCO
-  tidyr::nest() |>  # Créer des sous-ensembles pour chaque groupe de Genotype
+  dplyr::filter(dplyr::n_distinct(Type) == 2) |> 
+  tidyr::nest() |> 
   dplyr::mutate(wilcox_test = purrr::map(data, ~ wilcox.test(medianD ~ Type, data = .x))) |>
-  dplyr::mutate(wilcox_test_tidy = purrr::map(wilcox_test, broom::tidy)) |>  # Organiser les résultats
+  dplyr::mutate(wilcox_test_tidy = purrr::map(wilcox_test, broom::tidy)) |> 
   tidyr::unnest(wilcox_test_tidy) |> dplyr::mutate(p.adjust = p.adjust(p.value, method = "BH")) |>
      dplyr::mutate(significant = ifelse( p.adjust < 0.05, "*", ""))
 
@@ -878,14 +874,17 @@ p1 <- data %>%
   facet_wrap(~ Genotype, ncol=8, scales = "fixed")
 
 p1
-
-wilcox_wtOther_co[,-c(2:3,6)]
-
 ```
+
+
+```{r TLtab, results='asis', echo=FALSE, caption="table1", message=FALSE}
+print(xtable(wilcox_wtOther_co[,-c(2:3,6)]))
+```
+
 
 ### Comparaison of the CO TL: between wt and each genotype
 
-```{r}
+```{r COwt, echo=FALSE}
 wt_data <- data %>% filter(Genotype == "wt", Type=="CO")
 other_genotypes_data <- data %>% filter(Genotype != "wt", Type=="CO")
 
@@ -896,9 +895,15 @@ wilcox_wtOther_co <- other_genotypes_data |>
   dplyr::mutate(wilcox_test_tidy = purrr::map(wilcox_test, broom::tidy)) %>%  # Organiser les résultats
   tidyr::unnest(wilcox_test_tidy) %>% dplyr::mutate(p.adjust = p.adjust(p.value, method = "BH")) |>
      mutate(significant = ifelse( p.adjust < 0.05, "*", ""))
+```
 
-wilcox_wtOther_co[,-c(2:3,6)]
+```{r coStat, results='asis', echo=FALSE, caption="table1", message=FALSE}
+print(xtable(wilcox_wtOther_co[,-c(2:3,6)]))
+```
 
+### Comparaison of the NCO TL: between wt and each genotype
+
+```{r NCOwt, echo=FALSE}
 wt_data <- data %>% filter(Genotype == "wt", Type=="NCO")
 other_genotypes_data <- data %>% filter(Genotype != "wt", Type=="NCO")
 
@@ -909,9 +914,12 @@ wilcox_wtOther_nco <- other_genotypes_data |>
   dplyr::mutate(wilcox_test_tidy = purrr::map(wilcox_test, broom::tidy)) %>%  # Organiser les résultats
   tidyr::unnest(wilcox_test_tidy) %>% dplyr::mutate(p.adjust = p.adjust(p.value, method = "BH")) |>
      mutate(significant = ifelse( p.adjust < 0.05, "*", ""))
-
-wilcox_wtOther_nco[,-c(2:3,6)]
 ```
+
+```{r ncoStat, results='asis', echo=FALSE,  message=FALSE}
+print(xtable(wilcox_wtOther_nco[,-c(2:3,6)],caption="table1"))
+```
+
 
 ## Distribution of CO and NCO in features
 
@@ -1053,9 +1061,9 @@ Occ.event
 
 ## Distribution of SNP in features
 
-Mat et Meth à rajouter
-TxDb.Athaliana.BioMart.plantsmart28 
-...
+The datamart **TxDb.Athaliana.BioMart.plantsmart28** was used to annotate
+the SNP in the different features of the genome thanks to the locateVariants function from the VariantAnnotation package.
+ 
 
 
 ```{r txdb}
@@ -1127,9 +1135,12 @@ feat2 <- right_join(feat1,tOcc.event,by="Compartiments", suffix=c("",".event"))
 row.names(feat2) <- feat2$Compartiments
 feat2 <- dplyr::select(feat2,-CO)
 
-feat2
-
 ```
+
+```{r printAnnot,results='asis',align='left'}
+print(xtable(feat2))
+```
+
 
 ```{r plotcomp}
 rr <- feat2 %>% dplyr::select(.,"feat.prop","snp.prop")
@@ -1250,11 +1261,19 @@ res <- tibble(
 
 ```
 
-```{r tlNCOres, echo=FALSE, caption="sup_figure3", width=5, height=5}
-load("manipTracLengthNCO.RData")
+```{r tlNCOres, echo=FALSE, out.width="50%",fig.align='center'}
+load("Data/manipTracLengthNCO.RData")
 
 ggplot(manipTracLengthNCO,aes(x=Lwindow,y=ProbDetec)) +
     xlab("window's size") + ylab("Probability of Detection") +
      geom_point() + theme_bw()
 ```
 
+# Bibliographie
+
+
+# Session info
+
+```{r sessionInfo, echo=TRUE}
+sessionInfo()
+```
