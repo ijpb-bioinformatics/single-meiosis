@@ -103,7 +103,7 @@ hetero = as.tibble(
 
 Tetrad's analysis was carried out by applying the overall strategy
 proposed by @Anderson2011 and implemented in the single-meiosis.sh
-pipeline avalaibale at .
+pipeline available at .
 
 -   For each tetrads, sequences from the four individuals were mapped
     against a merged reference genome containing both the Columbia
@@ -113,9 +113,11 @@ pipeline avalaibale at .
 
 -   Alignment were filtered out to remove non specific hit and PCR
     duplicates. Such parameters ensure only the maintenance of reads
-    that are specific to a parental genome but also specific to a
-    location within a genome. This parameters discards reads that span
-    conversion but allowing mismatches introduced two much noises in       the results. This settings was the best compromise between             specificity and sensitivity.
+    that are specific to one of the parental genomes and also specific 
+    to a single locus This parameters discards reads that span
+    conversion but allowing mismatches introduced two much noises in 
+    the results. This settings was the best compromise between specificity 
+    and sensitivity.
 
 -   Each alignment file was then separated by parental genomes: Col-0
     and Ler-0 to compute the number of reads covering each genome
@@ -123,11 +125,11 @@ pipeline avalaibale at .
 
 ### Cross with SNV: variantutils R functions [author: Charif D.]
 
-VCF files were crossed with the allelique SNVs list between Col-0 and Ler-0 provided by @Zapata2016 (TabOfSNP.txt) and serve as input to the HMM.
+VCF files and SNPs list (Zapata et al., 2016) were cross referenced and used as input for the HMM
 
 ### Individuals and Tetrad genotyping: HMM_model R functions [author: Robin S.]
 
-An HMM model was implemented by S. Robin to obtain both the individuals and tetrad genotypes at each SNV position from the 4 count files (M1, M2, M3, M4) of a Tetrad. 
+An HMM model was implemented by S. Robin to obtain both the individuals and tetrad genotypes at each SNV position from files that compile the number of reads at each position for each individual in the tetrad (M1, M2, M3, M4). 
 
 Notations:
 
@@ -141,7 +143,7 @@ Notations:
 
 #### Individual level:
 
-Because of the experimental setting, at every marker, the ratio
+Because of the experimental setting, at each marker, the ratio
 $Y_{it} / R_{it}$ is expected to be close to either:
 
 -   1/2 (heterozygous genotype Col/Ler) or
@@ -203,7 +205,7 @@ We used the hidden Markov model (HMM) framework where:
 
 #### HMM parameters
 
--   The hidden states of each individuals have been considered jointly.
+-   The hidden states of each individual have been considered jointly.
     Both the success probabilities ($\gamma_1, \gamma_2$) and the
     transition rates ($\lambda, \mu$) are common to al individuals,
     resulting in: $$
@@ -212,7 +214,7 @@ We used the hidden Markov model (HMM) framework where:
 -   To take into account the non homogeneous distance separating the
     marker, we allowed heterogeneous transition probabilities
     (continuous time Markov chain). The frequencies of changes from one
-    states to another are given by transition rates $$
+    state to another are given by transition rates $$
     \lambda_{k\ell}: k \rightarrow \ell.
     $$ In the binary case ($Z \in \{1, 2\}$), denoting $$
     \lambda: 1 \rightarrow 2, \qquad \mu: 2 \rightarrow 1,
@@ -234,7 +236,7 @@ $$
 
 #### Results:
 
--   Chromosom
+-   Chromosome
 -   Position
 -   MAP
 -   $-log10(1-MAP_{it})$
@@ -244,24 +246,26 @@ $$
 
 Thanks to the marker genotype obtained by the HMM model, we then used
 the crossover programm @Anderson2011 to detect and classify the CO
-event. Two COs could be detected if they are at least distant by 5kb.
+event. To be considered as 2 independent COs, the SNPs involved had to 
+be more than 5 kilobases apart
 
 ### NCOs detection:
 
 NCOs correspond to markers with the following states
-$St=\{2,3,5,8,9,12,14,15\}$ Successiv markers with a genotype
-corresponding to one of this states and with a maximum distance of 2 Kb
-between each belong to the same event.
+$St=\{2,3,5,8,9,12,14,15\}$. Contiguous markers with a genotype
+corresponding to only of this states and less than 2 kb apart
+were considered as a single event belong to the same event.
 
 ### Tetrads analysis iteration
 
 1.  A first analysis of all tetrads was done considering all of the SNV
     markers from @Zapata2016 (All_SNV=545481)
-2.  SNVs where then filtering according to the followig criterions:
+2.  SNVs where then filtered according to the followig criterions:
 
 -   Removing of SNVs associated to COs that are found in several tetrads
     (file Liste_FAUX_CO.txt)
--   Removing of markers with non 2:2 (fichier df_Genotype_SNP_count.txt)
+-   Removing of markers with a non 2:2 segregation in most of the tetrads 
+(fichier df_Genotype_SNP_count.txt)
 
 3.  Re-analysis of all Tetrads with a reducing list of SNV
     (Gold_Variants=522658).
@@ -274,17 +278,17 @@ database and the locateVariants function from the VariantAnnotation
 package: Coding, Intron, FiveUTR, ThreeUTR, Promoter up to 1000 bases.
 
 Regarding, heterochromatine, centromere and transposable elements, we
-used a bed file from personal communication with Dr. Mezard.
+used a bed file (@Giraut2011)
 
 ### Track Length estimation
 
-- median TL: 
+- median TL: Each end of the track is defined as the midpoint between the two converted SNPs with opposite genotypes. Tract length is found by calculating the distance between these two midpoints
 - min TL: between the last converted SNPs 
 - max TL: between the 2 flanking SNPs
 
 ### Detection power
 
--   Foreach window size
+-   For each window size
     (20,50,75,100,200,300,400,500,600,700,
     800,900,1000,1200,1500,2000,2500,3000,
     4000,5000,8000,10000)
@@ -354,9 +358,9 @@ combined_plot
 
 ```
 
-The score is positively correlated to the rate of true positiv NCO
+The score is positively correlated to the rate of true positive (TP) NCO.
 
-More the tetrad’s depth is important, less the number of event to check
+The more the tetrad’s depth is important, the less the number of event to check
 is high and the highest is the rate of TP NCO.
 
 ```{r scorePlot, out.width = "50%"}
@@ -679,18 +683,24 @@ GC.nbSNP <- CO_data |>
   dplyr::count(is.GCCO) |>  # Compter les occurrences de is.GCCO pour chaque Genotype
   dplyr::mutate(percentage = n / sum(n) * 100) 
 
+GC.nbSNP_summary <- GC.nbSNP %>%
+  dplyr::group_by(Genotype) %>%
+  dplyr::summarise(total_n = sum(n)) 
+
 pGCCO <- ggplot(GC.nbSNP) + 
     geom_bar(aes(x = Genotype, y = percentage , fill=as.factor(is.GCCO)), stat = "identity") + 
-    scale_fill_manual(values = c("red", "darkred"), name = "", 
+    scale_fill_manual(values = c("darkred","red"), name = "", 
                       labels = c("without GC", "with GC"))  + 
     theme_bw() +
     theme(
         plot.margin = margin(t = 5, r = 5, b = 0, l = 5) , 
         axis.text.x = element_text(angle = 45, hjust = 1) , 
         axis.text.y = element_text(size = 8), 
-        legend.position = "bottom")+ 
-    labs( x = "", y = "% of COs") +
-    scale_y_continuous(labels = scales::percent_format(scale = 1)) 
+        legend.position = "right",
+        legend.box="vertical")+ 
+    labs( x = "Genotype", y = "% of COs") +
+    scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+    geom_text(data=GC.nbSNP_summary,aes(x = Genotype, y = 104, label = total_n), size = 3) 
 
 ```
 
@@ -704,7 +714,7 @@ nb_NCO$Genotype <- factor(nb_NCO$Genotype, levels = c("wt", "Fa","Fi","FiFa","QA
 pNCO <- ggplot(nb_NCO) + 
   geom_jitter(aes(x = Genotype, y = n, color = Genotype), width = 0.2, size = 1.5) +  # Ajout de jitter
   labs(title = "", 
-       x = "", 
+       x = "Genotype", 
        y = "# of NCOs per Tetrads") + 
   theme_bw() + 
   theme(
@@ -729,7 +739,7 @@ pCONCO <- merge(nb_NCO,nb_CO,by=c("Genotype","Tetrad")) |>
     ggplot() + geom_jitter(aes(x = Genotype, y = sum , color = Genotype),
                            width = 0.2, size = 1.5) + ylim(0, 100) +
   labs(title = "",
-       x = "Genotype",
+       x = "",
        y = "# of COs + NCOs per Tetrads") +
   theme_bw() +
   theme(
@@ -740,11 +750,17 @@ pCONCO <- merge(nb_NCO,nb_CO,by=c("Genotype","Tetrad")) |>
     panel.grid.minor = element_blank()
   )
 
-fig2 <- grid.arrange(pCO,pNCO,pCONCO,pGCCO, ncol = 2, nrow=2)
-fig2
+# fig2 <- grid.arrange(pCO,pNCO,pCONCO,pGCCO, ncol = 3, nrow=2)
+# fig2
 
-ggsave(filename="fig2.pdf", plot=fig2)
+combined_plot <-  (pCO | pNCO | pCONCO) / (pGCCO | plot_spacer()) +
+  theme(
+        legend.box.margin = margin(0, 0, 0, 10))  + theme_bw()
 
+# Afficher le résultat
+combined_plot
+
+ggsave(filename="fig2.pdf", plot=combined_plot)
 ```
 
 
@@ -987,20 +1003,26 @@ TEOcc<-as.matrix(c(table(GCCOannot$is.TE)[2],
 dimnames(TEOcc)[[1]]=NULL
 dimnames(TEOcc)[[2]]="TE"
 
-HeteroOCC<-as.matrix(c( table(GCCOannot$is.Hetero[-which(COannot$is.TE==TRUE)])[2],
+HeteroOCC<-as.matrix(c( table(GCCOannot$is.Hetero[-which(GCCOannot$is.TE==TRUE)])[2],
                        table(COannot$is.Hetero[-which(COannot$is.TE==TRUE)])[2],
                         table(NCOannot$is.Hetero[-which(NCOannot$is.TE==TRUE)])[2]))
 dimnames(HeteroOCC)[[1]]=NULL
 dimnames(HeteroOCC)[[2]]="Hetero"
 HeteroOCC[2]=0
 
-codingOcc<-as.matrix(c(table(GCCOannot$is.Hetero[-which(COannot$is.TE==TRUE)])[2],
+codingOcc<-as.matrix(c(table(GCCOannot$is.Coding)[2],
                        table(COannot$is.Coding)[2],
                        table(NCOannot$is.Coding)[2]))
 dimnames(codingOcc)[[1]]=NULL
 dimnames(codingOcc)[[2]]="Coding"
 
-Occ <- base::cbind(utr3Occ, utr5Occ ,intronOcc, codingOcc,TEOcc,HeteroOCC)
+promoterOcc<-as.matrix(c(table(GCCOannot$is.Promoter)[2],
+                       table(COannot$is.Promoter)[2],
+                       table(NCOannot$is.Promoter)[2]))
+dimnames(promoterOcc)[[1]]=NULL
+dimnames(promoterOcc)[[2]]="Promoter"
+
+Occ <- base::cbind(utr3Occ, utr5Occ ,intronOcc, codingOcc,TEOcc,HeteroOCC,promoterOcc)
 dimnames(Occ)[[1]]<-c("GCCO","CO","NCO")
 Occ[-2,]
 
@@ -1054,7 +1076,15 @@ codingOcc.event<-as.matrix(c(
 dimnames(codingOcc.event)[[1]]=NULL
 dimnames(codingOcc.event)[[2]]="Coding"
 
-Occ.event <- base::cbind(UTR3.event, UTR5.event, Intron.event,codingOcc.event,TEOcc.event,HeteroOCC.event)
+promoterOcc.event<-as.matrix(c(
+                        table(table(GCCOannot$is.Promoter,GCCOannot$id_CO)[2,] !=0)["TRUE"],
+                       table(table(COannot$is.Promoter,COannot$id_CO)[2,] !=0)["TRUE"],
+                       table(table(NCOannot$is.Promoter,NCOannot$id_NCO)[2,] !=0)["TRUE"]))
+dimnames(promoterOcc.event)[[1]]=NULL
+dimnames(promoterOcc.event)[[2]]="Promoter"
+
+
+Occ.event <- base::cbind(UTR3.event, UTR5.event, Intron.event,codingOcc.event,TEOcc.event,HeteroOCC.event,promoterOcc.event)
 dimnames(Occ.event)[[1]]<-c("GCCO","CO","NCO")
 Occ.event
 ```
@@ -1112,16 +1142,21 @@ te <- as(te,"GRanges")
 SumTELength <- sum(width(te))
 NbSNPinTE<- dplyr::filter(TabOfSNP,is.Gold==TRUE,is.TE ==TRUE) |> dplyr::count()
 
+# Promoter
+AppSumPromoterLength <- length(unique(unlist(mcols(exonicParts(txdb))$gene_id))) * 1000
+NbSNPinPromoter<- dplyr::filter(TabOfSNP,is.Gold==TRUE,is.Promoter ==TRUE) |> dplyr::count()
+
+
 # Summary
 
-Compartiments <- c("Introns","Exons","5'UTR","3'UTR","Centromere","Heterochromatin","TE")
-SumLength <- c(SumIntronsLength,SumExonsLength,SumfiveUTRLength,SumthreeUTRLength,SumCentroLength,SumHeteroLength,SumTELength)
-NbSNP <- as.vector(c(NbSNPinIntrons$n,NbSNPinExons$n,NbSNPinFiveUTR$n,NbSNPinThreeUTR$n,NbSNPinCentro$n,NbSNPinHetero$n,NbSNPinTE$n))
+Compartiments <- c("Introns","Exons","5'UTR","3'UTR","Centromere","Heterochromatin","TE","Promoter")
+SumLength <- c(SumIntronsLength,SumExonsLength,SumfiveUTRLength,SumthreeUTRLength,SumCentroLength,SumHeteroLength,SumTELength, AppSumPromoterLength)
+NbSNP <- as.vector(c(NbSNPinIntrons$n,NbSNPinExons$n,NbSNPinFiveUTR$n,NbSNPinThreeUTR$n,NbSNPinCentro$n,NbSNPinHetero$n,NbSNPinTE$n,NbSNPinPromoter$n))
 feat.prop=SumLength/sum(SumLength)*100
 snp.prop=NbSNP/sum(NbSNP)*100
 Features.df <- data.frame(Compartiments,SumLength,NbSNP,feat.prop,snp.prop)
 Features.df <- Features.df[-5,]
-Features.df$Compartiments <- c("Intron","Coding","UTR5","UTR3","Hetero","TE")
+Features.df$Compartiments <- c("Intron","Coding","UTR5","UTR3","Hetero","TE","Promoter")
 
 tOcc <- as.data.frame(t(Occ))
 tOcc$Compartiments <- row.names(tOcc)
@@ -1154,7 +1189,7 @@ data_long <- rr %>%
 p3  <- ggplot(data_long, aes(x = features, y = Proportion, fill = Measure)) +
   geom_bar(stat = "identity", position = "dodge") +
   labs(x = "Features", y = "Proportion", fill = "Type",
-       title = "SNP distribution in features compared to the compartiment's size of features") + 
+       title = "SNP Distribution in Features Compared to Feature Size") + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10)) +  
   scale_fill_manual(values = c("feat.prop"="green","snp.prop"="darkgreen"))
 ```
@@ -1180,12 +1215,14 @@ disSNP_res_long <- disSNP_res %>%
 
 p4 <- ggplot(disSNP_res_long, aes(x = Features, y = Count, fill = Type)) +
   geom_bar(stat = "identity", position = "dodge") +  
-  labs(x = "Features", y = "Number of converted SNP (sum of all tetrads)", fill = "Type") +  
+  labs(x = "Features", y = "# of converted SNP (sum of all tetrads)", fill = "Type") +  
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10)) +  
   scale_fill_manual(values = c("GCCO.Observed" = "red", "GCCO.Expected" = "darkred",
                                "NCO.Observed" = "orange", "NCO.Expected" = "darkorange"))
 
 grid.arrange(p3,p4,ncol=1)
+
+ggsave(filename="fig4.pdf", plot=grid.arrange(p3,p4,ncol=1))
 
 res
 ```
@@ -1267,6 +1304,7 @@ load("Data/manipTracLengthNCO.RData")
 ggplot(manipTracLengthNCO,aes(x=Lwindow,y=ProbDetec)) +
     xlab("window's size") + ylab("Probability of Detection") +
      geom_point() + theme_bw()
+
 ```
 
 # Bibliographie
