@@ -1,4 +1,4 @@
-Genotype	Tetrad	Tetrad.CO.Event	Chr	Chromatid1	Chromatid2	GC_tracLength	GC.nbSNP	flankingSNP.F1	flankingSNP.F2	SNP.MAP*.F1	SNP.MAP*.F2	SNP.MAP*.GC	FlankingSNP1.Ler	FlankingSNP2.Ler	taille Col	Taille Ler	difference Col Ler	SNP density	is.complexGCCO
+Genotype	Tetrad	Tetrad.CO.Event	Chr	Chromatid1	Chromatid2	GC_tracLength	GC.nbSNP	flankingSNP.F1	flankingSNP.F2	SNP.MAP.F1	SNP.MAP.F2	SNP.MAP.GC	FlankingSNP1.Ler	FlankingSNP2.Ler	taille_Col	Taille_Ler	difference_Col_Ler	SNP_density	is.complexGCCO
 wt	wt_Tet1	wt_Tet1_CO_1	Chr1	3	4	0	0	28456198	28477388	10	6	10_6	27415012	27436198	21190	21186	4	0	FALSE
 wt	wt_Tet1	wt_Tet1_CO_2	Chr1	1	3	371	6	16777356	16778027	13	10	13_9_9_9_9_9_9_10	15827944	15828615	671	671	0	0.894187779433681	FALSE
 wt	wt_Tet1	wt_Tet1_CO_3	Chr1	2	3	0	0	680183	680416	11	13	11_13	681143	681376	233	233	0	0	FALSE

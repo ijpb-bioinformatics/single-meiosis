@@ -1,0 +1,5 @@
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
+chromatid1 Ler Col Ler Col Ler Col Ler Col Ler Col Ler Col Ler Col Ler Col
+chromatid2 Ler Ler Col Col Ler Ler Col Col Ler Ler Col Col Ler Ler Col Col
+chromatid3 Ler Ler Ler Ler Col Col Col Col Ler Ler Ler Ler Col Col Col Col
+chromatid4 Ler Ler Ler Ler Ler Ler Ler Ler Col Col Col Col Col Col Col Col

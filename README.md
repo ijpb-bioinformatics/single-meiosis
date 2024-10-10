@@ -26,13 +26,20 @@ Example:
    ├─ tetrad_M4_s2.fq
 ``` 
 
+# Codes organisation:
 
-# Tetrad's processing:
+|_bash
+|_R
+    |_hmm-nco
+    |_variantutils
+|_Rmd
+    |_Data
+|_scripts_tetrad_processing
+
 
 ## scripts_tetrad_processing
 
-Contain the main scripts necessary to run tetrads sequencing products 
-analysis.
+Contain the main scripts necessary to run tetrads analysis.
  
 - singlemeiosis.sh (main script)
 - singlemeiosis-pipeline_genotoul_V3 (conf file)
@@ -43,7 +50,7 @@ analysis.
 
 ### single-meiosis-pipeline
 
-- Align tetrads on Col + Ler genome 
+- Align tetrads on Col (TAIR10) + Ler (https://www.ncbi.nlm.nih.gov/nucleotide/LUHQ01000000) genome 
 - Separate bam by parental genomes (Col and Ler) and call read depth by genome position.
 
 input:
@@ -51,10 +58,9 @@ input:
 ```bash
    |_Tetrad (*.fq)
    |_Genomes
-      |_ Col.fasta
+      |_ Col.fasta 
       |_ Ler.fasta 
 ``` 
-
 
 output:
 
@@ -76,14 +82,13 @@ output:
 ## R: variantutils 
 
 - Process the output of the single-meiosis bash pipeline
-and prepare input for hmm-nco function.
-- Call the crossover.py programm
+and prepare input for hmm-nco function. 
+- Call the crossover.py programm.
 
 ## R: hmm-nco 
 
 author: S. Robin 
-
-R function to run the HMM model for Tetrad's genotyping .
+R functions to run the HMM model.
 
 # Report
 
