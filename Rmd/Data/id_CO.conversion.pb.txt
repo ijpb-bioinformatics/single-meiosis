@@ -1,4 +1,3 @@
-x
 QFa_Tet16_CO_24
 QFiFa_Tet19_CO_29
 QFiFa_Tet19_CO_32
